@@ -1,6 +1,6 @@
 // app/Services/TaskService.js
-const Task = require('../Models/Task');
-const TaskHistory = require('../Models/TaskHistory');
+const TaskRepository = require('../Repositories/TaskRepository');
+const TaskHistoryRepository = require('../Repositories/TaskHistoryRepository');
 const TaskStatusEnum = require('../Enums/TaskStatusEnum');
 const TaskHistoryTypeEnum = require('../Enums/TaskHistoryTypeEnum');
 const HttpError = require('../Utils/HttpError');
@@ -9,18 +9,18 @@ const TaskStatsJob = require('../Jobs/TaskStatsJob');
 
 class TaskService {
   static listByUser(userId) {
-    return Task.findAllByUser(userId);
+    return TaskRepository.findAllByUser(userId);
   }
 
   static create({ userId, titulo, descricao }) {
-    const task = Task.create({
+    const task = TaskRepository.create({
       userId,
       titulo,
       descricao,
       status: TaskStatusEnum.PENDENTE,
     });
 
-    TaskHistory.create({
+    TaskHistoryRepository.create({
       taskId: task.id,
       tipo: TaskHistoryTypeEnum.CRIACAO,
       descricao: 'Tarefa criada',
@@ -34,7 +34,8 @@ class TaskService {
     //
     // Regras esperadas:
     //
-    // 1. Buscar a tarefa pelo ID.
+    // 1. Buscar a tarefa pelo ID usando o repositório:
+    //      const task = TaskRepository.findById(taskId);
     //    - Se não existir, lançar HttpError(404, 'Tarefa não encontrada').
     //
     // 2. Verificar se a tarefa pertence ao usuário (task.userId === user.id).
@@ -46,9 +47,12 @@ class TaskService {
     //    - Se status === TaskStatusEnum.CONCLUIDA
     //         -> HttpError(400, 'Tarefa já está concluída').
     //
-    // 4. Atualizar o status para TaskStatusEnum.CONCLUIDA e salvar a tarefa (Task.save).
+    // 4. Atualizar o status para TaskStatusEnum.CONCLUIDA e salvar a tarefa:
+    //      task.status = TaskStatusEnum.CONCLUIDA;
+    //      TaskRepository.save(task);
     //
-    // 5. Criar um registro de histórico em TaskHistory com tipo TaskHistoryTypeEnum.CONCLUSAO.
+    // 5. Criar um registro de histórico usando TaskHistoryRepository.create
+    //    com tipo TaskHistoryTypeEnum.CONCLUSAO.
     //
     // 6. Se notify === true:
     //      - chamar await TaskMail.sendTaskCompleted(user, task);

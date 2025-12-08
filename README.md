@@ -9,6 +9,7 @@ Você recebeu um mini backend de tarefas em Node.js + Express, organizado em cam
 
 - `Controllers`
 - `Services`
+- `Repositories`
 - `Validators`
 - `Models`
 - `Enums`
@@ -97,13 +98,28 @@ req.user = {
 
 ---
 
+## Arquitetura (visão rápida)
+
+* **Controllers** → recebem a requisição HTTP, chamam os Services e devolvem a resposta.
+* **Services** → concentram a lógica de negócio e orquestram chamadas para Repositories, Mails, Jobs etc.
+* **Repositories** → responsáveis por acessar e manipular os dados (no desafio, em memória).
+* **Models** → representam as entidades (estrutura de dados).
+* **Validators** → validam dados de entrada (params/body) antes de chegar nos Services.
+* **Enums** → agrupam constantes (status, tipos de histórico).
+* **Mails/Jobs** → simulações de envio de e-mail e registro de estatísticas.
+* **Utils** → tratamento de erro (`HttpError`, `errorHandler`) e resposta (`ApiResponse`).
+* **Middleware** → autenticação fake (`AuthMiddleware`).
+
+---
+
 ## O que já está pronto
 
 * Rota `GET /tasks`: lista tarefas do usuário atual.
 * Rota `POST /tasks`: cria uma nova tarefa.
 * Camadas:
 
-  * Model `Task` / `TaskHistory`
+  * Models `Task` / `TaskHistory`
+  * Repositories `TaskRepository` / `TaskHistoryRepository`
   * Enums de status (`TaskStatusEnum`) e histórico (`TaskHistoryTypeEnum`)
   * Validator de criação (`TaskCreateValidator`)
   * Service de criação/listagem (`TaskService.create` e `TaskService.listByUser`)
@@ -134,6 +150,7 @@ Ao concluir uma tarefa:
 
 1. **A tarefa deve existir**
 
+   * Buscar pelo `TaskRepository`.
    * Se a tarefa não for encontrada, retornar **404**.
 
 2. **A tarefa deve pertencer ao usuário autenticado**
@@ -149,11 +166,11 @@ Ao concluir uma tarefa:
 4. **Atualização**
 
    * Atualizar o status para `CONCLUIDA` usando `TaskStatusEnum`.
-   * Persistir a alteração com `Task.save(task)`.
+   * Persistir a alteração com `TaskRepository.save(task)`.
 
 5. **Histórico**
 
-   * Criar um registro em `TaskHistory` com:
+   * Criar um registro em `TaskHistory` via `TaskHistoryRepository.create` com:
 
      * `taskId`
      * `tipo = TaskHistoryTypeEnum.CONCLUSAO`
@@ -193,7 +210,11 @@ Você deve implementar a funcionalidade passando por **várias camadas** da apli
    * O que fazer:
 
      * Implementar **todas** as regras de negócio descritas acima.
-     * Usar `Task`, `TaskHistory`, `TaskStatusEnum`, `TaskHistoryTypeEnum`, `TaskMail`, `TaskStatsJob` e `HttpError`.
+     * Usar **apenas** os Repositories para acessar dados:
+
+       * `TaskRepository`
+       * `TaskHistoryRepository`
+     * Integrar com `TaskStatusEnum`, `TaskHistoryTypeEnum`, `TaskMail`, `TaskStatsJob` e `HttpError`.
 
 3. **Controller**
 
@@ -263,7 +284,7 @@ Content-Type: application/json
 ## O que será avaliado
 
 * Capacidade de **entender** e **respeitar** uma arquitetura já existente.
-* Uso correto das camadas (Controller, Service, Validator, Model, Enums, Utils, Middleware).
+* Uso correto das camadas (Controller, Service, Repository, Validator, Model, Enums, Utils, Middleware).
 * Qualidade e clareza do código.
 * Tratamento de erros e respostas HTTP.
 * Organização e raciocínio durante a live code.
