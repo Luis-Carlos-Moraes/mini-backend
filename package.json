@@ -1,0 +1,19 @@
+{
+  "name": "mini-backend-tasks",
+  "version": "1.0.0",
+  "description": "Mini backend de tarefas para desafio live code",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  }
+}
